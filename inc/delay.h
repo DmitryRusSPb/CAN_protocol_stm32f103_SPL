@@ -8,6 +8,10 @@
 #ifndef DELAY_H_
 #define DELAY_H_
 
+#include "stm32f10x.h"
 
+void Delay_Init(void);
+
+void delay_ms(uint32_t milliseconds);
 
 #endif /* DELAY_H_ */

@@ -11,7 +11,15 @@
 #include "stm32f10x.h"
 #include "stm32f10x_rcc.h"
 
+#include "stdio.h"
 #include "can.h"
+#include "delay.h"
+#include "NazaCanDecoderLib.h"
+
+
+/*Privat varibles*/
+uint16_t messageId = 0;
+uint16_t msCounter = 0;
 
 /**
  * @brief
@@ -83,28 +91,118 @@ void RCC_Config(void)
 
 int main(void)
 {
-	uint16_t Count = 0;
-
+//	initialise_monitor_handles();
 	// Настройка тактирования
 	RCC_Config();
+
+	Delay_Init();
 
 	// Инициализации CAN-интерфеса
 	Init_CAN();
 
+	NazaCanDecoderLib_Begin();
+
+
 	while(1)
 	{
-		// Èñïîëüçóåì ñ÷åò÷èê
-		if (Count == 0x5)
+		messageId = NazaCanDecoderLib_Decode();
+
+		if(messageId)
 		{
-			// Åñëè äîøëè äî ìàêñèìóìà, òî îòïðàâèì ñîîáùåíèå â øèíó
-			Count = 0;
-			CAN_Send_Test();
+//			printf("Message ");
+//			printf("%X", messageId);
+//			printf(" decoded");
 		}
-		else
-		{
-			// Èíà÷å - óâåëè÷èì ñ÷åò÷èê íà åäèíèöó
-			Count++;
-		}
+
+//		// Display attitude at 10Hz rate so every 100 milliseconds
+//		if(msCounter == 100)
+//		{
+//			printf("Pitch: ");
+//			printf("%d", pitch);
+//			printf(", Roll: ");
+//			printf("%d", roll);
+//		}
+//
+//		// Display other data at 5Hz rate so every 200 milliseconds
+//		if(msCounter == 200)
+//		{
+//			printf("Mode: ");
+//			switch (mode)
+//			{
+//			case MANUAL:
+//				printf("MAN");
+//				break;
+//			case GPS:
+//				printf("GPS");
+//				break;
+//			case FAILSAFE:
+//				printf("FS");
+//				break;
+//			case ATTI:
+//				printf("ATT");
+//				break;
+//			default:
+//				printf("UNK");
+//				break;
+//			}
+//
+//			printf(", Bat: ");
+//			printf("%10.2G", battery/1000.0);
+//
+//			printf("Lat: ");
+//			printf("%10.7G", lat);
+//			printf(", Lon: ");
+//			printf("%10.7G", lon);
+//			printf(", GPS alt: ");
+//			printf("%10G", gpsAlt);
+//			printf(", COG: ");
+//			printf("%10G", cog);
+//			printf(", Speed: ");
+//			printf("%10G", spd);
+//			printf(", VSI: ");
+//			printf("%10G", vsi);
+//			printf(", Fix: ");
+//
+//			switch (fix)
+//			{
+//			case NO_FIX:
+//				printf("No fix");
+//				break;
+//			case FIX_2D:
+//				printf("2D");
+//				break;
+//			case FIX_3D:
+//				printf("3D");
+//				break;
+//			case FIX_DGPS:
+//				printf("DGPS");
+//				break;
+//			default:
+//				printf("UNK");
+//				break;
+//			}
+//
+//			printf(", Sat: ");
+//			printf("%d \n", sat);
+//
+//			printf("Alt: ");
+//			printf("%10G", alt);
+//			printf(", Heading: ");
+//			printf("%10G \n", heading);
+//		}
+//
+//		// Display date/time at 1Hz rate so every 1000 milliseconds
+//		if(msCounter == 1000)
+//		{
+//			uint32_t dateAndTime[6];
+//			sprintf(dateAndTime, "%4u.%02u.%02u %02u:%02u:%02u",
+//					year + 2000, month, day,
+//					hour, minute, second);
+//			printf("Date/Time: ");
+//			printf(dateAndTime);
+//		}
+
+		Heartbeat();
 	}
 
 }

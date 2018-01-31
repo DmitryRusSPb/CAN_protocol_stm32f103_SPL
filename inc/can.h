@@ -45,10 +45,10 @@
 // #define CAN1_SPEED_PRESCALE			50						// 20 Kb
 // #define CAN1_SPEED_PRESCALE			100						// 10 Kb
 
-#define USB_HP_CAN1_TX_IRQHandler_ENABLE
-#define USB_LP_CAN1_RX0_IRQHandler_ENABLE
-#define CAN1_RX1_IRQHandler_ENABLE
-#define CAN1_SCE_IRQHandler_ENABLE
+//#define USB_HP_CAN1_TX_IRQHandler_ENABLE
+//#define USB_LP_CAN1_RX0_IRQHandler_ENABLE
+//#define CAN1_RX1_IRQHandler_ENABLE
+//#define CAN1_SCE_IRQHandler_ENABLE
 
 #define CAN_CMD_Test_Send			0x0001
 #define CAN_CMD_Test_Ok				0x0002

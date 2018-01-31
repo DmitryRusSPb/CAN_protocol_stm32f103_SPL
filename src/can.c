@@ -156,27 +156,27 @@ void Init_CAN(void)
 
 	CAN_Init(CAN1, &CAN_InitStructure);
 
-	// CAN filter init
-	CAN_FilterInitTypeDef CAN_FilterInitStructure;
-	// Номер фильтра, доступны с 0 по 13
-	CAN_FilterInitStructure.CAN_FilterNumber = 1;
-	// Режим работы фильтра
-	CAN_FilterInitStructure.CAN_FilterMode = CAN_FilterMode_IdMask;
-	// Разрядность (масштабирование)
-	CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
-	// Старшая часть ID
-	CAN_FilterInitStructure.CAN_FilterIdLow = 0x0000;
-	// Младшая часть ID
-	CAN_FilterInitStructure.CAN_FilterIdHigh =  0x0000;
-	// Старшая часть маски ID
-	CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x0000;
-	// Младшая часть маски ID
-	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0x0000;
-	// Имя буфера FIFO (у нас их всего два)
-	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_FIFO0;
-	// Состояние фильтра
-	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
-	CAN_FilterInit(&CAN_FilterInitStructure);
+//	// CAN filter init
+//	CAN_FilterInitTypeDef CAN_FilterInitStructure;
+//	// Номер фильтра, доступны с 0 по 13
+//	CAN_FilterInitStructure.CAN_FilterNumber = 1;
+//	// Режим работы фильтра
+//	CAN_FilterInitStructure.CAN_FilterMode = CAN_FilterMode_IdMask;
+//	// Разрядность (масштабирование)
+//	CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
+//	// Старшая часть ID
+//	CAN_FilterInitStructure.CAN_FilterIdLow = 0x0000;
+//	// Младшая часть ID
+//	CAN_FilterInitStructure.CAN_FilterIdHigh =  0x0000;
+//	// Старшая часть маски ID
+//	CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x0000;
+//	// Младшая часть маски ID
+//	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0x0000;
+//	// Имя буфера FIFO (у нас их всего два)
+//	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_FIFO0;
+//	// Состояние фильтра
+//	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
+//	CAN_FilterInit(&CAN_FilterInitStructure);
 
 #ifdef USB_HP_CAN1_TX_IRQHandler_ENABLE
 	// CAN Transmit mailbox empty Interrupt enable

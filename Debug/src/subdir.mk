@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../src/NazaCanDecoderLib.c \
 ../src/can.c \
 ../src/delay.c \
 ../src/main.c \
@@ -11,6 +12,7 @@ C_SRCS += \
 ../src/system_stm32f10x.c 
 
 OBJS += \
+./src/NazaCanDecoderLib.o \
 ./src/can.o \
 ./src/delay.o \
 ./src/main.o \
@@ -18,6 +20,7 @@ OBJS += \
 ./src/system_stm32f10x.o 
 
 C_DEPS += \
+./src/NazaCanDecoderLib.d \
 ./src/can.d \
 ./src/delay.d \
 ./src/main.d \
