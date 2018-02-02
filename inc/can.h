@@ -19,6 +19,12 @@
 #ifndef __CAN
 #define __CAN
 
+#include "stm32f10x.h"
+#include "stm32f10x_gpio.h"
+#include "stm32f10x_rcc.h"
+#include "stm32f10x_can.h"
+#include "misc.h"
+
 //#define CAN1_ReMap // Закоментировать, если нет ремапинга портов
 
 #ifndef CAN1_ReMap
@@ -46,7 +52,7 @@
 // #define CAN1_SPEED_PRESCALE			100						// 10 Kb
 
 //#define USB_HP_CAN1_TX_IRQHandler_ENABLE
-//#define USB_LP_CAN1_RX0_IRQHandler_ENABLE
+#define USB_LP_CAN1_RX0_IRQHandler_ENABLE
 //#define CAN1_RX1_IRQHandler_ENABLE
 //#define CAN1_SCE_IRQHandler_ENABLE
 

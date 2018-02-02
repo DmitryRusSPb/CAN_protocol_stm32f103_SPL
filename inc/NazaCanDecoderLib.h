@@ -63,7 +63,7 @@
  * - Фантомные интеллектуальные данные батареи
  *
  * ID = D1 C0, ML = 04 00 с CAN id 0x1FE (отправляется каждую секунду)
- * - выглядит как версия прошивки смарт-смартфона Phantom
+ * - выглядит как версия прошивки Phantom
  */
 
 // Uncommnet to read smart battery data (if available) e.g. on Phantom controller
@@ -294,7 +294,7 @@ uint8_t minute;
 uint8_t second;
 uint16_t battery; // battery voltage in mV
 uint16_t motorOut[8]; // motor output value (0 when unused, otherwise 16920~35000, 16920 = motor off), use motorOut_t enum to index the table
-uint16_t rcIn[10]; // RC stick input (-1000~1000), use rcInChan_t enum to index the table
+int16_t rcIn[10]; // RC stick input (-1000~1000), use rcInChan_t enum to index the table
 modes_t mode;      // flight mode (see mode_t enum)
 
 #ifdef GET_SMART_BATTERY_DATA

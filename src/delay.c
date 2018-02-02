@@ -7,6 +7,7 @@
 #include "delay.h"
 
 uint32_t TimingDelay = 0;
+extern uint16_t msCounter;
 
 void Delay_Init(void)
 {
@@ -17,6 +18,8 @@ void SysTick_Handler(void)
 {
 	if (TimingDelay != 0x00)
 		TimingDelay--;
+
+	msCounter++;
 
 }
 

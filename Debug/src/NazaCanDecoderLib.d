@@ -27,7 +27,11 @@ src/NazaCanDecoderLib.o: ../src/NazaCanDecoderLib.c \
  /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/stm32f10x_usart.h \
  /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/stm32f10x_wwdg.h \
  /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/misc.h \
- /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/inc/can.h
+ /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/inc/can.h \
+ /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/stm32f10x_gpio.h \
+ /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/stm32f10x_rcc.h \
+ /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/stm32f10x_can.h \
+ /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/misc.h
 
 /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/inc/NazaCanDecoderLib.h:
 
@@ -86,3 +90,11 @@ src/NazaCanDecoderLib.o: ../src/NazaCanDecoderLib.c \
 /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/misc.h:
 
 /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/inc/can.h:
+
+/home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/stm32f10x_gpio.h:
+
+/home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/stm32f10x_rcc.h:
+
+/home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/stm32f10x_can.h:
+
+/home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/StdPeriph_Driver/inc/misc.h:

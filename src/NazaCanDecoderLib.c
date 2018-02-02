@@ -266,12 +266,16 @@ void Heartbeat()
 	TxMessage.ExtId = 0x00;
 	TxMessage.IDE = CAN_Id_Standard;
 	TxMessage.RTR = CAN_RTR_DATA;
-	TxMessage.DLC = HEARTBEAT_1[0][7];
+	TxMessage.DLC = HEARTBEAT_1[0][2];
 
 	TxMessage.Data[0] = HEARTBEAT_1[1][0];
 	TxMessage.Data[1] = HEARTBEAT_1[1][1];
 	TxMessage.Data[2] = HEARTBEAT_1[1][2];
 	TxMessage.Data[3] = HEARTBEAT_1[1][3];
+	TxMessage.Data[4] = HEARTBEAT_1[1][4];
+	TxMessage.Data[5] = HEARTBEAT_1[1][5];
+	TxMessage.Data[6] = HEARTBEAT_1[1][6];
+	TxMessage.Data[7] = HEARTBEAT_1[1][7];
 
 	CAN_Transmit(CAN1, &TxMessage);
 
@@ -279,16 +283,12 @@ void Heartbeat()
 	TxMessage.ExtId = 0x00;
 	TxMessage.IDE = CAN_Id_Standard;
 	TxMessage.RTR = CAN_RTR_DATA;
-	TxMessage.DLC = HEARTBEAT_2[0][7];
+	TxMessage.DLC = HEARTBEAT_2[0][2];
 
 	TxMessage.Data[0] = HEARTBEAT_2[1][0];
 	TxMessage.Data[1] = HEARTBEAT_2[1][1];
 	TxMessage.Data[2] = HEARTBEAT_2[1][2];
 	TxMessage.Data[3] = HEARTBEAT_2[1][3];
-	TxMessage.Data[4] = HEARTBEAT_2[1][4];
-	TxMessage.Data[5] = HEARTBEAT_2[1][5];
-	TxMessage.Data[6] = HEARTBEAT_2[1][6];
-	TxMessage.Data[7] = HEARTBEAT_2[1][7];
 
 	CAN_Transmit(CAN1, &TxMessage);
 }
@@ -304,9 +304,9 @@ StatusTypeDef CAN_setFilter(uint16_t filter_id, uint8_t filter_num)
 	// Разрядность (масштабирование)
 	CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
 	// Старшая часть ID
-	CAN_FilterInitStructure.CAN_FilterIdLow = filter_id << 5;
+	CAN_FilterInitStructure.CAN_FilterIdLow = 0x0000;
 	// Младшая часть ID
-	CAN_FilterInitStructure.CAN_FilterIdHigh =  0x0000;
+	CAN_FilterInitStructure.CAN_FilterIdHigh =  filter_id << 5;
 	// Старшая часть маски ID
 	CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x0000;
 	// Младшая часть маски ID

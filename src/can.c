@@ -15,16 +15,12 @@
  * <h2><center>&copy; COPYRIGHT 2016 SmartMODE</center></h2>
  */
 
-#include "stm32f10x.h"
-#include "stm32f10x_gpio.h"
-#include "stm32f10x_rcc.h"
-#include "stm32f10x_can.h"
-#include "misc.h"
-
 #include "can.h"
 
 uint8_t num;
 uint8_t errcnt = 0;
+
+extern uint16_t messageId;
 
 void Init_CAN(void)
 {
@@ -389,25 +385,25 @@ void USB_LP_CAN_RX0_IRQHandler(void)
 		// Сбросим флаг прерывания
 		CAN_ClearITPendingBit(CAN1, CAN_IT_FMP0);
 
-		// Обнулим данные пакета
-		RxMessage.DLC =     0x00;
-		RxMessage.ExtId =   0x00;
-		RxMessage.FMI =     0x00;
-		RxMessage.IDE =     0x00;
-		RxMessage.RTR =     0x00;
-		RxMessage.StdId =   0x00;
-		RxMessage.Data [0] = 0x00;
-		RxMessage.Data [1] = 0x00;
-		RxMessage.Data [2] = 0x00;
-		RxMessage.Data [3] = 0x00;
-		RxMessage.Data [4] = 0x00;
-		RxMessage.Data [5] = 0x00;
-		RxMessage.Data [6] = 0x00;
-		RxMessage.Data [7] = 0x00;
+//		// Обнулим данные пакета
+//		RxMessage.DLC =     0x00;
+//		RxMessage.ExtId =   0x00;
+//		RxMessage.FMI =     0x00;
+//		RxMessage.IDE =     0x00;
+//		RxMessage.RTR =     0x00;
+//		RxMessage.StdId =   0x00;
+//		RxMessage.Data [0] = 0x00;
+//		RxMessage.Data [1] = 0x00;
+//		RxMessage.Data [2] = 0x00;
+//		RxMessage.Data [3] = 0x00;
+//		RxMessage.Data [4] = 0x00;
+//		RxMessage.Data [5] = 0x00;
+//		RxMessage.Data [6] = 0x00;
+//		RxMessage.Data [7] = 0x00;
 
 		// Получим сообщение
-		CAN_Receive(CAN1, CAN_FIFO0, &RxMessage);
-
+//		CAN_Receive(CAN1, CAN_FIFO0, &RxMessage);
+		messageId = NazaCanDecoderLib_Decode();
 		/* Вставляем любой свой код обработки входящего пакета */
 
 		/* --------------------------------------------------- */

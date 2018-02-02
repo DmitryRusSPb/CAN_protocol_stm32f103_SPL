@@ -28,4 +28,5 @@
 "src/main.o"
 "src/syscalls.o"
 "src/system_stm32f10x.o"
+"src/usart.o"
 "startup/startup_stm32.o"

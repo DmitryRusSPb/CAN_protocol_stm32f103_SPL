@@ -9,7 +9,8 @@ C_SRCS += \
 ../src/delay.c \
 ../src/main.c \
 ../src/syscalls.c \
-../src/system_stm32f10x.c 
+../src/system_stm32f10x.c \
+../src/usart.c 
 
 OBJS += \
 ./src/NazaCanDecoderLib.o \
@@ -17,7 +18,8 @@ OBJS += \
 ./src/delay.o \
 ./src/main.o \
 ./src/syscalls.o \
-./src/system_stm32f10x.o 
+./src/system_stm32f10x.o \
+./src/usart.o 
 
 C_DEPS += \
 ./src/NazaCanDecoderLib.d \
@@ -25,7 +27,8 @@ C_DEPS += \
 ./src/delay.d \
 ./src/main.d \
 ./src/syscalls.d \
-./src/system_stm32f10x.d 
+./src/system_stm32f10x.d \
+./src/usart.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

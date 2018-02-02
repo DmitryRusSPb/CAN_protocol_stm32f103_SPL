@@ -13,13 +13,39 @@
 
 #include "stdio.h"
 #include "can.h"
+#include "usart.h"
 #include "delay.h"
 #include "NazaCanDecoderLib.h"
-
+#include "stdlib.h"
+#include "string.h"
+#include <stdio.h>
 
 /*Privat varibles*/
 uint16_t messageId = 0;
 uint16_t msCounter = 0;
+
+/* Отправка в USART через printf*/
+#ifdef __GNUC__
+/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
+     set to 'Yes') calls __io_putchar() */
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
+
+PUTCHAR_PROTOTYPE
+{
+	/* Place your implementation of fputc here */
+	/* e.g. write a character to the USART */
+	USART_SendData(USART1, (uint8_t) ch);
+
+	/* Loop until the end of transmission */
+	while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
+	{}
+
+	return ch;
+}
+/*------------------------------*/
 
 /**
  * @brief
@@ -91,7 +117,7 @@ void RCC_Config(void)
 
 int main(void)
 {
-//	initialise_monitor_handles();
+	//	initialise_monitor_handles();
 	// Настройка тактирования
 	RCC_Config();
 
@@ -99,108 +125,58 @@ int main(void)
 
 	// Инициализации CAN-интерфеса
 	Init_CAN();
+	Init_USART();
 
 	NazaCanDecoderLib_Begin();
+
+	printf(" Hello.\r\nI am ready!\r\n");
+
+
+	Heartbeat();
 
 
 	while(1)
 	{
-		messageId = NazaCanDecoderLib_Decode();
-
-		if(messageId)
+		// Display attitude at 10Hz rate so every 100 milliseconds
+		if(msCounter == 1000)
 		{
-//			printf("Message ");
-//			printf("%X", messageId);
-//			printf(" decoded");
-		}
+			printf("Pitch: %.3f Roll: %.3f\r\n", pitchRad * 57.295779513, rollRad * 57.295779513);
 
-//		// Display attitude at 10Hz rate so every 100 milliseconds
-//		if(msCounter == 100)
-//		{
-//			printf("Pitch: ");
-//			printf("%d", pitch);
-//			printf(", Roll: ");
-//			printf("%d", roll);
-//		}
-//
-//		// Display other data at 5Hz rate so every 200 milliseconds
-//		if(msCounter == 200)
-//		{
-//			printf("Mode: ");
-//			switch (mode)
-//			{
-//			case MANUAL:
-//				printf("MAN");
-//				break;
-//			case GPS:
-//				printf("GPS");
-//				break;
-//			case FAILSAFE:
-//				printf("FS");
-//				break;
-//			case ATTI:
-//				printf("ATT");
-//				break;
-//			default:
-//				printf("UNK");
-//				break;
-//			}
-//
-//			printf(", Bat: ");
-//			printf("%10.2G", battery/1000.0);
-//
-//			printf("Lat: ");
-//			printf("%10.7G", lat);
-//			printf(", Lon: ");
-//			printf("%10.7G", lon);
-//			printf(", GPS alt: ");
-//			printf("%10G", gpsAlt);
-//			printf(", COG: ");
-//			printf("%10G", cog);
-//			printf(", Speed: ");
-//			printf("%10G", spd);
-//			printf(", VSI: ");
-//			printf("%10G", vsi);
-//			printf(", Fix: ");
-//
-//			switch (fix)
-//			{
-//			case NO_FIX:
-//				printf("No fix");
-//				break;
-//			case FIX_2D:
-//				printf("2D");
-//				break;
-//			case FIX_3D:
-//				printf("3D");
-//				break;
-//			case FIX_DGPS:
-//				printf("DGPS");
-//				break;
-//			default:
-//				printf("UNK");
-//				break;
-//			}
-//
-//			printf(", Sat: ");
-//			printf("%d \n", sat);
-//
-//			printf("Alt: ");
-//			printf("%10G", alt);
-//			printf(", Heading: ");
-//			printf("%10G \n", heading);
-//		}
-//
-//		// Display date/time at 1Hz rate so every 1000 milliseconds
-//		if(msCounter == 1000)
-//		{
-//			uint32_t dateAndTime[6];
-//			sprintf(dateAndTime, "%4u.%02u.%02u %02u:%02u:%02u",
-//					year + 2000, month, day,
-//					hour, minute, second);
-//			printf("Date/Time: ");
-//			printf(dateAndTime);
-//		}
+			// Display other data at 5Hz rate so every 200 milliseconds
+
+			printf("Mode: ");
+			switch (mode)
+			{
+			case MANUAL:
+				printf("MAN\r\n");
+				break;
+			case GPS:
+				printf("GPS\r\n");
+				break;
+			case FAILSAFE:
+				printf("FS\r\n");
+				break;
+			case ATTI:
+				printf("ATT\r\n");
+				break;
+			default:
+				printf("UNK\r\n");
+				break;
+			}
+
+			printf("Bat: %.3f V\r\n" , battery/1000.0);
+			printf("Motor 1: %d\r\n", motorOut[0]);
+			printf("Motor 2: %d\r\n", motorOut[1]);
+			printf("Motor 3: %d\r\n", motorOut[2]);
+			printf("Motor 4: %d\r\n", motorOut[3]);
+			printf("rcIn 1: %d\r\n", rcIn[0]);
+			printf("rcIn 2: %d\r\n", rcIn[1]);
+			printf("rcIn 3: %d\r\n", rcIn[2]);
+			printf("rcIn 4: %d\r\n", rcIn[3]);
+			printf("Alt: %.3f m\r\n", alt);
+
+			msCounter = 0;
+		}
 
 		Heartbeat();
 	}

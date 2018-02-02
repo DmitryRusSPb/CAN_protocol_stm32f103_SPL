@@ -35,7 +35,7 @@ all: CAN_protocol_stm32f103_SPL.elf
 CAN_protocol_stm32f103_SPL.elf: $(OBJS) $(USER_OBJS) /home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/LinkerScript.ld
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU GCC Linker'
-	arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -mfloat-abi=soft -T"/home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/LinkerScript.ld" -Wl,-Map=output.map -Wl,--gc-sections -o "CAN_protocol_stm32f103_SPL.elf" @"objects.list" $(USER_OBJS) $(LIBS) -lm
+	arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -mfloat-abi=soft -u _printf_float -T"/home/user/workspaceSTM32/CAN_protocol_stm32f103_SPL/LinkerScript.ld" -Wl,-Map=output.map -Wl,--gc-sections -o "CAN_protocol_stm32f103_SPL.elf" @"objects.list" $(USER_OBJS) $(LIBS) -lm
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build
