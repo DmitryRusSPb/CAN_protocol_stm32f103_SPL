@@ -20,6 +20,7 @@
  */
 
 #include "NazaCanDecoderLib.h"
+#include <stdio.h>
 
 
 const uint16_t HEARTBEAT_1 [2][8] = {{0x108, 0, 8, 0, 0, 0, 0, 0}, {0x55, 0xAA, 0x55, 0xAA, 0x07, 0x10, 0x00, 0x00}};
@@ -29,10 +30,187 @@ const uint16_t FILTER_090  = 0x090;
 const uint16_t FILTER_108  = 0x108;
 const uint16_t FILTER_7F8  = 0x7F8;
 
-//NazaCanDecoderLib::NazaCanDecoderLib()
-//{
-//	// Empty
-//}
+uint32_t heartbeatTime;
+uint8_t canMsgIdIdx;
+uint8_t canMsgByte;
+
+naza_msg_t msgBuf[NAZA_MESSAGE_COUNT];
+uint16_t msgLen[NAZA_MESSAGE_COUNT];
+uint16_t msgIdx[NAZA_MESSAGE_COUNT];
+uint8_t header[NAZA_MESSAGE_COUNT];
+uint8_t footer[NAZA_MESSAGE_COUNT];
+uint8_t collectData[NAZA_MESSAGE_COUNT];
+
+double lon;       // longitude in degree decimal
+double lat;       // latitude in degree decimal
+double alt;       // altitude in m (from barometric sensor)
+double gpsAlt;    // altitude in m (from GPS)
+double spd;       // speed in m/s
+fixType_t fix;     // fix type (see fixType_t enum)
+uint8_t sat;       // number of satellites
+double heading;   // heading in degrees (titlt compensated)
+double headingNc; // heading in degrees (not titlt compensated)
+double cog;       // course over ground
+double vsi;       // vertical speed indicator (barometric) in m/s (a.k.a. climb speed)
+double hdop;      // horizontal dilution of precision
+double vdop;      // vertical dilution of precision
+double gpsVsi;    // vertical speed indicator (GPS based) in m/s (a.k.a. climb speed)
+float pitchRad;   // pitch in radians
+float rollRad;    // roll in radians
+int8_t pitch;      // pitch in degrees
+int16_t roll;      // roll in degrees
+uint8_t year;      // year (minus 2000)
+uint8_t month;
+uint8_t day;
+uint8_t hour;    // hour (for time between 16:00 and 23:59 the hour returned from GPS module is actually 00:00 - 7:59)
+uint8_t minute;
+uint8_t second;
+uint16_t battery; // battery voltage in mV
+uint16_t motorOut[8]; // motor output value (0 when unused, otherwise 16920~35000, 16920 = motor off), use motorOut_t enum to index the table
+int16_t rcIn[10]; // RC stick input (-1000~1000), use rcInChan_t enum to index the table
+modes_t mode;      // flight mode (see mode_t enum)
+
+#ifdef GET_SMART_BATTERY_DATA
+uint8_t  batteryPercent; // smart battery charge percentage (0-100%)
+uint16_t batteryCell[3]; // smart battery cell voltage in mV, use smartBatteryCell_t enum to index the table
+#endif
+
+// Periodically (every 2 sec., keeps it inner counter) sends a heartbeat message to the controller
+void Heartbeat(void);
+// Decode incoming CAN message if any (shall be called in a loop)
+uint16_t NazaCanDecoderLib_Decode(void);
+
+// Returns latitude in degree decimal
+double nazaDecode_getLat()
+{
+	return lat;
+}
+// Returns longitude in degree decimal
+double nazaDecode_getLon()
+{
+	return lon;
+}
+// Returns altitude in m (from barometric sensor)
+double nazaDecode_getAlt()
+{
+	return alt;
+}
+// Returns altitude in m (from GPS)
+double nazaDecode_getGpsAlt()
+{
+	return gpsAlt;
+}
+// Returns speed in m/s
+double nazaDecode_getSpeed()
+{
+	return gpsAlt;
+}
+// Returns fix type (see fixType_t enum)
+fixType_t nazaDecode_getFixType(void)
+{
+	return fix;
+}
+// Returns number of satellites
+uint8_t nazaDecode_getNumSat()
+{
+	return sat;
+}
+// Returns heading in degrees (titlt compensated)
+double nazaDecode_getHeading()
+{
+	return heading;
+}
+// Returns heading in degrees (not titlt compensated)
+double nazaDecode_getHeadingNc()
+{
+	return headingNc;
+}
+// Returns course over ground
+double nazaDecode_getCog()
+{
+	return cog;
+}
+// Returns vertical speed (barometric) in m/s (a.k.a. climb speed)
+double nazaDecode_getVsi()
+{
+	return vsi;
+}
+// Returns vertical speed (from GPS) in m/s (a.k.a. climb speed)
+double nazaDecode_getGpsVsi()
+{
+	return gpsVsi;
+}
+// Returns horizontal dilution of precision
+double nazaDecode_getHdop()
+{
+	return hdop;
+}
+// Returns vertical dilution of precision
+double nazaDecode_getVdop()
+{
+	return vdop;
+}
+// Returns pitch in degrees
+uint8_t nazaDecode_getPitch()
+{
+	return pitch;
+}
+// Returns roll in degrees
+uint16_t nazaDecode_getRoll()
+{
+	return roll;
+}
+// Returns year from GPS (minus 2000)
+uint8_t nazaDecode_getYear()
+{
+	return year;
+}
+// Returns month from GPS
+uint8_t nazaDecode_getMonth()
+{
+	return month;
+}
+// Returns day from GPS
+uint8_t nazaDecode_getDay()
+{
+	return day;
+}
+// Returns hour from GPS (Note that for time between 16:00
+// and 23:59 the hour returned from GPS module is actually 00:00 - 7:59)
+uint8_t nazaDecode_getHour()
+{
+	return hour;
+}
+// Returns minute from GPS
+uint8_t nazaDecode_getMinute()
+{
+	return minute;
+}
+// Returns second from GPS
+uint8_t nazaDecode_getSecond()
+{
+	return second;
+}
+// Returns battery voltage in mV
+uint16_t nazaDecode_getBattery()
+{
+	return battery;
+}
+// Returns motor output value (0 when unused, otherwise 16920~35000, 16920 = motor off),
+// use motorOut_t enum to index the table
+uint16_t nazaDecode_getMotorOut(motorOut_t mot)
+{
+	return motorOut[mot];
+}
+// Returns RC stick input (-1000~1000), use rcInChan_t enum to index the table
+uint16_t nazaDecode_getRcIn(rcInChan_t chan)
+{
+	return rcIn[chan];
+}
+modes_t nazaDecode_getMode()
+{
+	return mode;
+}
 
 void NazaCanDecoderLib_Begin(void)
 {
@@ -49,26 +227,13 @@ void NazaCanDecoderLib_Begin(void)
 
 uint16_t NazaCanDecoderLib_Decode(void)
 {
-	CanRxMsg RxMessage;
-
 	// Обнулим данные пакета
-	RxMessage.DLC =     0x00;
-	RxMessage.ExtId =   0x00;
-	RxMessage.FMI =     0x00;
-	RxMessage.IDE =     0x00;
-	RxMessage.RTR =     0x00;
-	RxMessage.StdId =   0x00;
-	RxMessage.Data [0] = 0x00;
-	RxMessage.Data [1] = 0x00;
-	RxMessage.Data [2] = 0x00;
-	RxMessage.Data [3] = 0x00;
-	RxMessage.Data [4] = 0x00;
-	RxMessage.Data [5] = 0x00;
-	RxMessage.Data [6] = 0x00;
-	RxMessage.Data [7] = 0x00;
+	CanRxMsg RxMessage = {0};
 
 	uint16_t msgId = NAZA_MESSAGE_NONE;
+
 	CAN_Receive(CAN1, CAN_FIFO0, &RxMessage);
+
 	switch(RxMessage.StdId)
 	{
 	case 0x090:
@@ -188,15 +353,24 @@ uint16_t NazaCanDecoderLib_Decode(void)
 				else
 					if(msgBuf[canMsgIdIdx].header.id == NAZA_MESSAGE_MSG1003)
 					{
-						uint32_t dateTime = msgBuf[canMsgIdIdx].msg1003.dateTime;
-						second = dateTime & 0b00111111; dateTime >>= 6;
-						minute = dateTime & 0b00111111; dateTime >>= 6;
-						hour = dateTime & 0b00001111; dateTime >>= 4;
-						day = dateTime & 0b00011111; dateTime >>= 5;
+						uint32_t dateTime = *msgBuf[canMsgIdIdx].msg1003.dateTime;
+						second = dateTime & 0x3F;
+						dateTime >>= 6;
+						minute = dateTime & 0x3F;
+						dateTime >>= 6;
+						hour = dateTime & 0x0F;
+						dateTime >>= 4;
+						day = dateTime & 0x1F;
+						dateTime >>= 5;
+						// Вот комментарий автора по этому моменту:
+						// Returns hour from GPS (Note that for time between 16:00
+						// and 23:59 the hour returned from GPS module is actually 00:00 - 7:59)
+						// Время и дату выдаёт по нулям. Буду разбираться.
 						if(hour > 7)
 							day++;
-						month = dateTime & 0b00001111; dateTime >>= 4;
-						year = dateTime & 0b01111111;
+						month = dateTime & 0x0F;
+						dateTime >>= 4;
+						year = dateTime & 0x7F;
 						gpsVsi = -msgBuf[canMsgIdIdx].msg1003.downVelocity;
 						vdop = (double)msgBuf[canMsgIdIdx].msg1003.vdop / 100;
 						double ndop = (double)msgBuf[canMsgIdIdx].msg1003.ndop / 100;
@@ -267,6 +441,10 @@ void Heartbeat()
 	TxMessage.IDE = CAN_Id_Standard;
 	TxMessage.RTR = CAN_RTR_DATA;
 	TxMessage.DLC = HEARTBEAT_1[0][2];
+
+	// Здесь используется такое копирование, так как TxMessage.Data имеет
+	// размерность uint8_t, а HEARTBEAT_1 и HEARTBEAT_2 - uint16_t (такая
+	// организация HEARTBEAT_1 была создана автором либы)
 
 	TxMessage.Data[0] = HEARTBEAT_1[1][0];
 	TxMessage.Data[1] = HEARTBEAT_1[1][1];

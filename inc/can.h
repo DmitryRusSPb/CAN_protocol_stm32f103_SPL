@@ -29,14 +29,14 @@
 
 #ifndef CAN1_ReMap
 	#define CAN1_GPIO_PORT			GPIOA
-	#define CAN1_RX_SOURCE			GPIO_Pin_11				// RX-����
-	#define CAN1_TX_SOURCE			GPIO_Pin_12				// TX-����
-	#define CAN1_Periph				RCC_APB2Periph_GPIOA	// ���� ���������
+	#define CAN1_RX_SOURCE			GPIO_Pin_11				// RX
+	#define CAN1_TX_SOURCE			GPIO_Pin_12				// TX
+	#define CAN1_Periph				RCC_APB2Periph_GPIOA
 #else
 	#define CAN1_GPIO_PORT			GPIOB
-	#define CAN1_RX_SOURCE			GPIO_Pin_8				// RX-����
-	#define CAN1_TX_SOURCE			GPIO_Pin_9				// TX-����
-	#define CAN1_Periph				RCC_APB2Periph_GPIOB	// ���� ���������
+	#define CAN1_RX_SOURCE			GPIO_Pin_8				// RX
+	#define CAN1_TX_SOURCE			GPIO_Pin_9				// TX
+	#define CAN1_Periph				RCC_APB2Periph_GPIOB
 #endif
 
 //// Выбор скорости шины

@@ -16,6 +16,7 @@
  */
 
 #include "can.h"
+#include "NazaCanDecoderLib.h"
 
 uint8_t num;
 uint8_t errcnt = 0;
@@ -318,20 +319,7 @@ void CAN_RX1_IRQHandler(void)
 		CAN_ClearITPendingBit(CAN1, CAN_IT_FMP1);
 
 		// Обнулим данные пакета
-		RxMessage.DLC =     0x00;
-		RxMessage.ExtId =   0x00;
-		RxMessage.FMI =     0x00;
-		RxMessage.IDE =     0x00;
-		RxMessage.RTR =     0x00;
-		RxMessage.StdId =   0x00;
-		RxMessage.Data [0] = 0x00;
-		RxMessage.Data [1] = 0x00;
-		RxMessage.Data [2] = 0x00;
-		RxMessage.Data [3] = 0x00;
-		RxMessage.Data [4] = 0x00;
-		RxMessage.Data [5] = 0x00;
-		RxMessage.Data [6] = 0x00;
-		RxMessage.Data [7] = 0x00;
+		RxMessage = {0};
 
 		// Получим сообщение
 		CAN_Receive(CAN1, CAN_FIFO1, &RxMessage);
@@ -374,8 +362,6 @@ void CAN_RX1_IRQHandler(void)
 #ifdef USB_LP_CAN1_RX0_IRQHandler_ENABLE
 void USB_LP_CAN_RX0_IRQHandler(void)
 {
-	CanRxMsg RxMessage;
-
 	// CAN Receive Interrupt enable FIFO 0
 	// Обработаем прерывания приемного буфера FIFO 0
 
@@ -385,24 +371,6 @@ void USB_LP_CAN_RX0_IRQHandler(void)
 		// Сбросим флаг прерывания
 		CAN_ClearITPendingBit(CAN1, CAN_IT_FMP0);
 
-//		// Обнулим данные пакета
-//		RxMessage.DLC =     0x00;
-//		RxMessage.ExtId =   0x00;
-//		RxMessage.FMI =     0x00;
-//		RxMessage.IDE =     0x00;
-//		RxMessage.RTR =     0x00;
-//		RxMessage.StdId =   0x00;
-//		RxMessage.Data [0] = 0x00;
-//		RxMessage.Data [1] = 0x00;
-//		RxMessage.Data [2] = 0x00;
-//		RxMessage.Data [3] = 0x00;
-//		RxMessage.Data [4] = 0x00;
-//		RxMessage.Data [5] = 0x00;
-//		RxMessage.Data [6] = 0x00;
-//		RxMessage.Data [7] = 0x00;
-
-		// Получим сообщение
-//		CAN_Receive(CAN1, CAN_FIFO0, &RxMessage);
 		messageId = NazaCanDecoderLib_Decode();
 		/* Вставляем любой свой код обработки входящего пакета */
 

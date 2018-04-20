@@ -19,6 +19,7 @@
 #include "stm32f10x.h"
 #include "can.h"
 #include "math.h"
+#include "string.h"
 
 /* Формат приходящих сообщений:
  * 55 AA 55 AA ID ID ML ML <полезная нагрузка> 66 CC 66 CC
@@ -67,7 +68,7 @@
  */
 
 // Uncommnet to read smart battery data (if available) e.g. on Phantom controller
-//#define GET_SMART_BATTERY_DATA
+#define GET_SMART_BATTERY_DATA
 
 #define CAN_SPEED				1000000
 
@@ -153,9 +154,9 @@ typedef struct __attribute__((packed))
 	float   eastVelocity;  // averaged eastward velocity or 0 when less than 5 satellites locked (m/s)
 	float   downVelocity;  // downward velocity (barometric) (m/s)
 	float   unk2[3];
-	uint16_t  magCalX;     // calibrated magnetometer X axis data
-	uint16_t  magCalY;     // calibrated magnetometer Y axis data
-	uint16_t  magCalZ;     // calibrated magnetometer Z axis data
+	int16_t  magCalX;     // calibrated magnetometer X axis data
+	int16_t  magCalY;     // calibrated magnetometer Y axis data
+	int16_t  magCalZ;     // calibrated magnetometer Z axis data
 	uint8_t  unk3[10];
 	uint8_t  numSat;       // number of locked satellites
 	uint8_t  unk4;
@@ -172,9 +173,9 @@ typedef struct __attribute__((packed))
 	uint32_t hae;           // horizontal accuracy estimate (millimeters)
 	uint32_t vae;           // vertical accuracy estimate (millimeters)
 	uint8_t  unk0[4];
-	uint32_t  northVelocity;// northward velocity (cm/s)
-	uint32_t  eastVelocity; // eastward velocity (cm/s)
-	uint32_t  downVelocity; // downward velocity (cm/s)
+	int32_t  northVelocity;// northward velocity (cm/s)
+	int32_t  eastVelocity; // eastward velocity (cm/s)
+	int32_t  downVelocity; // downward velocity (cm/s)
 	uint16_t pdop;          // position DOP (x100)
 	uint16_t vdop;          // vertical DOP (see uBlox NAV-DOP message for details)
 	uint16_t ndop;          // northing DOP (see uBlox NAV-DOP message for details)
@@ -205,7 +206,7 @@ typedef struct __attribute__((packed))
 	uint8_t  unk5[2];
 	float    stabRollIn;   // attitude stabilizer roll input (-1000~1000)
 	float    stabPitchIn;  // attitude stabilizer pitch input (-1000~1000)
-	float    stabThroIn;   // altitude stabilizer throttle input (-1000~1000)
+	float    stabThroIn;   // altitude st922abilizer throttle input (-1000~1000)
 	uint8_t  unk6[4];
 	float    actAileIn;    // actual aileron input, mode and arm state dependent (-1000~1000)
 	float    actElevIn;    // actual elevator input, mode and arm state dependent (-1000~1000)
@@ -215,9 +216,9 @@ typedef struct __attribute__((packed))
 	uint8_t  unk7[4];
 	uint8_t  controlMode;  // (0 - GPS/failsafe, 1 - waypoint mode?, 3 - manual, 6 - atti)
 	uint8_t  unk8[5];
-	uint16_t  gyrScalX;    // ???
-	uint16_t  gyrScalY;    // ???
-	uint16_t  gyrScalZ;    // ???
+	int16_t  gyrScalX;    // ???
+	int16_t  gyrScalY;    // ???
+	int16_t  gyrScalZ;    // ???
 	uint8_t  unk9[32];
 	float    downVelocity; // downward velocity (m/s)
 	float    altBaro;      // altitude from barometric sensor (meters)
@@ -256,112 +257,67 @@ typedef union
 #endif
 } naza_msg_t;
 
-
-uint32_t heartbeatTime;
-uint8_t canMsgIdIdx;
-uint8_t canMsgByte;
-
-naza_msg_t msgBuf[NAZA_MESSAGE_COUNT];
-uint16_t msgLen[NAZA_MESSAGE_COUNT];
-uint16_t msgIdx[NAZA_MESSAGE_COUNT];
-uint8_t header[NAZA_MESSAGE_COUNT];
-uint8_t footer[NAZA_MESSAGE_COUNT];
-uint8_t collectData[NAZA_MESSAGE_COUNT];
-
-double lon;       // longitude in degree decimal
-double lat;       // latitude in degree decimal
-double alt;       // altitude in m (from barometric sensor)
-double gpsAlt;    // altitude in m (from GPS)
-double spd;       // speed in m/s
-fixType_t fix;     // fix type (see fixType_t enum)
-uint8_t sat;       // number of satellites
-double heading;   // heading in degrees (titlt compensated)
-double headingNc; // heading in degrees (not titlt compensated)
-double cog;       // course over ground
-double vsi;       // vertical speed indicator (barometric) in m/s (a.k.a. climb speed)
-double hdop;      // horizontal dilution of precision
-double vdop;      // vertical dilution of precision
-double gpsVsi;    // vertical speed indicator (GPS based) in m/s (a.k.a. climb speed)
-float pitchRad;   // pitch in radians
-float rollRad;    // roll in radians
-uint8_t pitch;      // pitch in degrees
-uint16_t roll;      // roll in degrees
-uint8_t year;      // year (minus 2000)
-uint8_t month;
-uint8_t day;
-uint8_t hour;    // hour (for time between 16:00 and 23:59 the hour returned from GPS module is actually 00:00 - 7:59)
-uint8_t minute;
-uint8_t second;
-uint16_t battery; // battery voltage in mV
-uint16_t motorOut[8]; // motor output value (0 when unused, otherwise 16920~35000, 16920 = motor off), use motorOut_t enum to index the table
-int16_t rcIn[10]; // RC stick input (-1000~1000), use rcInChan_t enum to index the table
-modes_t mode;      // flight mode (see mode_t enum)
-
-#ifdef GET_SMART_BATTERY_DATA
-uint8_t  batteryPercent; // smart battery charge percentage (0-100%)
-uint16_t batteryCell[3]; // smart battery cell voltage in mV, use smartBatteryCell_t enum to index the table
-#endif
-
 // Periodically (every 2 sec., keeps it inner counter) sends a heartbeat message to the controller
 void Heartbeat(void);
 // Start the NazaCanDecoder
 void begin(void);
 // Decode incoming CAN message if any (shall be called in a loop)
 uint16_t NazaCanDecoderLib_Decode(void);
+
 // Returns latitude in degree decimal
-double getLat(double lat);
+double nazaDecode_getLat();
 // Returns longitude in degree decimal
-double getLon(double lon);
+double nazaDecode_getLon();
 // Returns altitude in m (from barometric sensor)
-double getAlt(double alt);
+double nazaDecode_getAlt();
 // Returns altitude in m (from GPS)
-double getGpsAlt(double gpsAlt);
+double nazaDecode_getGpsAlt();
 // Returns speed in m/s
-double getSpeed(double gpsAlt);
+double nazaDecode_getSpeed();
 // Returns fix type (see fixType_t enum)
-fixType_t getFixType(void);
+fixType_t nazaDecode_getFixType();
 // Returns number of satellites
-uint8_t getNumSat(uint8_t sat);
+uint8_t nazaDecode_getNumSat();
 // Returns heading in degrees (titlt compensated)
-double getHeading(double heading);
+double nazaDecode_getHeading();
 // Returns heading in degrees (not titlt compensated)
-double getHeadingNc(double headingNc);
+double nazaDecode_getHeadingNc();
 // Returns course over ground
-double getCog(double cog);
+double nazaDecode_getCog();
 // Returns vertical speed (barometric) in m/s (a.k.a. climb speed)
-double getVsi(double vsi);
+double nazaDecode_getVsi();
 // Returns vertical speed (from GPS) in m/s (a.k.a. climb speed)
-double getGpsVsi(double gpsVsi);
+double nazaDecode_getGpsVsi();
 // Returns horizontal dilution of precision
-double getHdop(double hdop);
+double nazaDecode_getHdop();
 // Returns vertical dilution of precision
-double getVdop(double vdop);
+double nazaDecode_getVdop();
 // Returns pitch in degrees
-uint8_t getPitch(uint8_t pitch);
+uint8_t nazaDecode_getPitch();
 // Returns roll in degrees
-uint16_t getRoll(uint16_t roll);
+uint16_t nazaDecode_getRoll();
 // Returns year from GPS (minus 2000)
-uint8_t getYear(uint8_t year);
+uint8_t nazaDecode_getYear();
 // Returns month from GPS
-uint8_t getMonth(uint8_t month);
+uint8_t nazaDecode_getMonth();
 // Returns day from GPS
-uint8_t getDay(uint8_t day);
+uint8_t nazaDecode_getDay();
 // Returns hour from GPS (Note that for time between 16:00
 // and 23:59 the hour returned from GPS module is actually 00:00 - 7:59)
-uint8_t getHour(uint8_t hour);
+uint8_t nazaDecode_getHour();
 // Returns minute from GPS
-uint8_t getMinute(uint8_t minute);
+uint8_t nazaDecode_getMinute();
 // Returns second from GPS
-uint8_t getSecond(uint8_t second);
+uint8_t nazaDecode_getSecond();
 // Returns battery voltage in mV
-uint16_t getBattery(uint16_t battery);
+uint16_t nazaDecode_getBattery();
 // Returns motor output value (0 when unused, otherwise 16920~35000, 16920 = motor off),
 // use motorOut_t enum to index the table
-uint16_t getMotorOut(motorOut_t mot);
+uint16_t nazaDecode_getMotorOut(motorOut_t mot);
 // Returns RC stick input (-1000~1000), use rcInChan_t enum to index the table
-uint16_t getRcIn(rcInChan_t chan);
+uint16_t nazaDecode_getRcIn(rcInChan_t chan);
 // Returns flight mode (see mode_t enum)
-//mode_t getMode(mode_t mode);
+modes_t nazaDecode_getMode();
 
 #ifdef GET_SMART_BATTERY_DATA
 typedef enum

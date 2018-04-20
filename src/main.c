@@ -131,21 +131,25 @@ int main(void)
 
 	printf(" Hello.\r\nI am ready!\r\n");
 
-
 	Heartbeat();
-
 
 	while(1)
 	{
+		//		if (CAN_GetITStatus(CAN1, CAN_IT_FMP0) == SET)
+		//		{
+		//			messageId = NazaCanDecoderLib_Decode();
+		//			// Сбросим флаг прерывания
+		//			CAN_ClearITPendingBit(CAN1, CAN_IT_FMP0);
+		//		}
 		// Display attitude at 10Hz rate so every 100 milliseconds
 		if(msCounter == 1000)
 		{
-			printf("Pitch: %.3f Roll: %.3f\r\n", pitchRad * 57.295779513, rollRad * 57.295779513);
+			printf("Pitch: %d Roll: %d\r\n", nazaDecode_getPitch(), nazaDecode_getRoll());
 
 			// Display other data at 5Hz rate so every 200 milliseconds
 
 			printf("Mode: ");
-			switch (mode)
+			switch (nazaDecode_getMode())
 			{
 			case MANUAL:
 				printf("MAN\r\n");
@@ -163,21 +167,18 @@ int main(void)
 				printf("UNK\r\n");
 				break;
 			}
-
-			printf("Bat: %.3f V\r\n" , battery/1000.0);
-			printf("Motor 1: %d\r\n", motorOut[0]);
-			printf("Motor 2: %d\r\n", motorOut[1]);
-			printf("Motor 3: %d\r\n", motorOut[2]);
-			printf("Motor 4: %d\r\n", motorOut[3]);
-			printf("rcIn 1: %d\r\n", rcIn[0]);
-			printf("rcIn 2: %d\r\n", rcIn[1]);
-			printf("rcIn 3: %d\r\n", rcIn[2]);
-			printf("rcIn 4: %d\r\n", rcIn[3]);
-			printf("Alt: %.3f m\r\n", alt);
-
+			printf("Bat: %.3f V\r\n" , nazaDecode_getBattery()/1000.0);
+			printf("Motor 1: %d\r\n", nazaDecode_getMotorOut(0));
+			printf("Motor 2: %d\r\n", nazaDecode_getMotorOut(1));
+			printf("Motor 3: %d\r\n", nazaDecode_getMotorOut(2));
+			printf("Motor 4: %d\r\n", nazaDecode_getMotorOut(3));
+			printf("rcIn 1: %d\r\n", nazaDecode_getRcIn(0));
+			printf("rcIn 2: %d\r\n", nazaDecode_getRcIn(1));
+			printf("rcIn 3: %d\r\n", nazaDecode_getRcIn(2));
+			printf("rcIn 4: %d\r\n", nazaDecode_getRcIn(3));
+			printf("Alt: %.3f m\r\n", nazaDecode_getAlt());
 			msCounter = 0;
 		}
-
 		Heartbeat();
 	}
 
