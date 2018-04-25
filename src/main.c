@@ -135,19 +135,11 @@ int main(void)
 
 	while(1)
 	{
-		//		if (CAN_GetITStatus(CAN1, CAN_IT_FMP0) == SET)
-		//		{
-		//			messageId = NazaCanDecoderLib_Decode();
-		//			// Сбросим флаг прерывания
-		//			CAN_ClearITPendingBit(CAN1, CAN_IT_FMP0);
-		//		}
-		// Display attitude at 10Hz rate so every 100 milliseconds
-		if(msCounter == 1000)
+		if((msCounter == 10))//&&(CAN_GetITStatus(CAN1, CAN_IT_FMP0) == SET))
 		{
 			printf("Pitch: %d Roll: %d\r\n", nazaDecode_getPitch(), nazaDecode_getRoll());
 
 			// Display other data at 5Hz rate so every 200 milliseconds
-
 			printf("Mode: ");
 			switch (nazaDecode_getMode())
 			{
@@ -172,11 +164,16 @@ int main(void)
 			printf("Motor 2: %d\r\n", nazaDecode_getMotorOut(1));
 			printf("Motor 3: %d\r\n", nazaDecode_getMotorOut(2));
 			printf("Motor 4: %d\r\n", nazaDecode_getMotorOut(3));
-			printf("rcIn 1: %d\r\n", nazaDecode_getRcIn(0));
-			printf("rcIn 2: %d\r\n", nazaDecode_getRcIn(1));
-			printf("rcIn 3: %d\r\n", nazaDecode_getRcIn(2));
-			printf("rcIn 4: %d\r\n", nazaDecode_getRcIn(3));
+			// Выдаст значение 0, так как подключено только 4 двигателя
+			printf("Motor 5: %d\r\n", nazaDecode_getMotorOut(4));
+			printf("Left Stick (horisontal): %d\r\n", nazaDecode_getRcIn(5));
+			printf("Right Stick (horisontal): %d\r\n", nazaDecode_getRcIn(1));
+			printf("Right Stick (vertical): %d\r\n", nazaDecode_getRcIn(2));
+			printf("Left Stick (horisontal): %d\r\n", nazaDecode_getRcIn(3));
 			printf("Alt: %.3f m\r\n", nazaDecode_getAlt());
+			// Работает лишь при подключенном GPS
+			printf("Date: %d.%d.%d\r\n", nazaDecode_getDay(), nazaDecode_getMonth(), nazaDecode_getYear());
+			printf("Time: %d:%d:%d\r\n",nazaDecode_getHour(), nazaDecode_getMinute(),nazaDecode_getSecond());
 			msCounter = 0;
 		}
 		Heartbeat();

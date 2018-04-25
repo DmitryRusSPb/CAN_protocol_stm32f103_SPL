@@ -315,7 +315,7 @@ uint16_t nazaDecode_getBattery();
 // use motorOut_t enum to index the table
 uint16_t nazaDecode_getMotorOut(motorOut_t mot);
 // Returns RC stick input (-1000~1000), use rcInChan_t enum to index the table
-uint16_t nazaDecode_getRcIn(rcInChan_t chan);
+int16_t nazaDecode_getRcIn(rcInChan_t chan);
 // Returns flight mode (see mode_t enum)
 modes_t nazaDecode_getMode();
 

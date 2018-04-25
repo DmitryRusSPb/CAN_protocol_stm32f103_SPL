@@ -30,6 +30,8 @@ const uint16_t FILTER_090  = 0x090;
 const uint16_t FILTER_108  = 0x108;
 const uint16_t FILTER_7F8  = 0x7F8;
 
+//extern uint16_t messageId;
+
 uint32_t heartbeatTime;
 uint8_t canMsgIdIdx;
 uint8_t canMsgByte;
@@ -203,7 +205,7 @@ uint16_t nazaDecode_getMotorOut(motorOut_t mot)
 	return motorOut[mot];
 }
 // Returns RC stick input (-1000~1000), use rcInChan_t enum to index the table
-uint16_t nazaDecode_getRcIn(rcInChan_t chan)
+int16_t nazaDecode_getRcIn(rcInChan_t chan)
 {
 	return rcIn[chan];
 }
@@ -248,7 +250,6 @@ uint16_t NazaCanDecoderLib_Decode(void)
 	default:
 		return msgId; // we don't care about other CAN messages
 	}
-
 	for(uint8_t i = 0; i < RxMessage.DLC; i++)
 	{
 		canMsgByte = RxMessage.Data[i];
@@ -349,11 +350,12 @@ uint16_t NazaCanDecoderLib_Decode(void)
 					if(cog < 0) cog += 360.0;
 					vsi = -msgBuf[canMsgIdIdx].msg1002.downVelocity;
 					msgId = NAZA_MESSAGE_MSG1002;
+					//					printf("ID: %x\r\n", msgId);
 				}
 				else
 					if(msgBuf[canMsgIdIdx].header.id == NAZA_MESSAGE_MSG1003)
 					{
-						uint32_t dateTime = *msgBuf[canMsgIdIdx].msg1003.dateTime;
+						uint32_t dateTime = msgBuf[canMsgIdIdx].msg1003.dateTime;
 						second = dateTime & 0x3F;
 						dateTime >>= 6;
 						minute = dateTime & 0x3F;
@@ -390,6 +392,7 @@ uint16_t NazaCanDecoderLib_Decode(void)
 						if((fix != NO_FIX) && (fixFlags & 0x02))
 							fix = FIX_DGPS;
 						msgId = NAZA_MESSAGE_MSG1003;
+						//						printf("ID: %x\r\n", msgId);
 					}
 					else
 						if(msgBuf[canMsgIdIdx].header.id == NAZA_MESSAGE_MSG1009)
@@ -402,7 +405,7 @@ uint16_t NazaCanDecoderLib_Decode(void)
 							{
 								rcIn[j] = msgBuf[canMsgIdIdx].msg1009.rcIn[j];
 							}
-#ifndef GET_SMART_BATTERY_DATA
+#ifdef GET_SMART_BATTERY_DATA
 							battery = msgBuf[canMsgIdIdx].msg1009.batVolt;
 #endif
 							rollRad = msgBuf[canMsgIdIdx].msg1009.roll;
@@ -411,6 +414,7 @@ uint16_t NazaCanDecoderLib_Decode(void)
 							pitch = (uint8_t)(pitchRad * 180.0 / M_PI);
 							mode = msgBuf[canMsgIdIdx].msg1009.flightMode;
 							msgId = NAZA_MESSAGE_MSG1009;
+							//							printf("ID: %x\r\n", msgId);
 						}
 #ifdef GET_SMART_BATTERY_DATA
 						else
@@ -423,6 +427,7 @@ uint16_t NazaCanDecoderLib_Decode(void)
 									batteryCell[j] = msgBuf[canMsgIdIdx].msg0926.cellVoltage[j];
 								}
 								msgId = NAZA_MESSAGE_MSG0926;
+								//								printf("ID: %x\r\n", msgId);
 							}
 #endif
 			}
@@ -488,7 +493,7 @@ StatusTypeDef CAN_setFilter(uint16_t filter_id, uint8_t filter_num)
 	// Старшая часть маски ID
 	CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x0000;
 	// Младшая часть маски ID
-	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0x0000;
+	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = FILTER_MASK << 5;
 	// Имя буфера FIFO (у нас их всего два)
 	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_FIFO0;
 	// Состояние фильтра
