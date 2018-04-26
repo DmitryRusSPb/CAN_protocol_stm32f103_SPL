@@ -135,7 +135,11 @@ int main(void)
 
 	while(1)
 	{
-		if((msCounter == 10))//&&(CAN_GetITStatus(CAN1, CAN_IT_FMP0) == SET))
+		if (CAN_GetFlagStatus(CAN1, CAN_FLAG_FMP0) == SET)
+		{
+			messageId = NazaCanDecoderLib_Decode();
+		}
+		if(msCounter == 100)
 		{
 			printf("Pitch: %d Roll: %d\r\n", nazaDecode_getPitch(), nazaDecode_getRoll());
 
@@ -176,7 +180,7 @@ int main(void)
 			printf("Time: %d:%d:%d\r\n",nazaDecode_getHour(), nazaDecode_getMinute(),nazaDecode_getSecond());
 			msCounter = 0;
 		}
-		Heartbeat();
+//		Heartbeat();
 	}
 
 }
