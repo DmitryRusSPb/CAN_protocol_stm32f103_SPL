@@ -22,9 +22,14 @@
 #include "NazaCanDecoderLib.h"
 #include <stdio.h>
 
+const uint16_t 	nazaKickID_1 = 0x108;
+const uint16_t 	nazaKickDLC_1 = 8;
+const uint8_t	nazaKickData_1 [8] = {0x55, 0xAA, 0x55, 0xAA, 0x07, 0x10, 0x00, 0x00};
 
-const uint16_t HEARTBEAT_1 [2][8] = {{0x108, 0, 8, 0, 0, 0, 0, 0}, {0x55, 0xAA, 0x55, 0xAA, 0x07, 0x10, 0x00, 0x00}};
-const uint16_t HEARTBEAT_2 [2][8] = {{0x108, 0, 4, 0, 0, 0, 0, 0}, {0x66, 0xCC, 0x66, 0xCC, 0x00, 0x00, 0x00, 0x00}};
+const uint16_t 	nazaKickID_2 = 0x108;
+const uint16_t 	nazaKickDLC_2 = 4;
+const uint8_t	nazaKickData_2 [8] = {0x66, 0xCC, 0x66, 0xCC, 0x00, 0x00, 0x00, 0x00};
+
 const uint16_t FILTER_MASK = 0x7FF;
 const uint16_t FILTER_090  = 0x090;
 const uint16_t FILTER_108  = 0x108;
@@ -33,54 +38,49 @@ const uint16_t FILTER_7F8  = 0x7F8;
 //extern uint16_t messageId;
 
 uint32_t heartbeatTime;
-uint8_t canMsgIdIdx;
-uint8_t canMsgByte;
+static uint8_t canMsgIdIdx;
+static uint8_t canMsgByte;
 
-naza_msg_t msgBuf[NAZA_MESSAGE_COUNT];
-uint16_t msgLen[NAZA_MESSAGE_COUNT];
-uint16_t msgIdx[NAZA_MESSAGE_COUNT];
-uint8_t header[NAZA_MESSAGE_COUNT];
-uint8_t footer[NAZA_MESSAGE_COUNT];
-uint8_t collectData[NAZA_MESSAGE_COUNT];
+static naza_msg_t msgBuf[NAZA_MESSAGE_COUNT];
+static uint16_t msgLen[NAZA_MESSAGE_COUNT];
+static uint16_t msgIdx[NAZA_MESSAGE_COUNT];
+static uint8_t header[NAZA_MESSAGE_COUNT];
+static uint8_t footer[NAZA_MESSAGE_COUNT];
+static uint8_t collectData[NAZA_MESSAGE_COUNT];
 
-double lon;       // longitude in degree decimal
-double lat;       // latitude in degree decimal
-double alt;       // altitude in m (from barometric sensor)
-double gpsAlt;    // altitude in m (from GPS)
-double spd;       // speed in m/s
-fixType_t fix;     // fix type (see fixType_t enum)
-uint8_t sat;       // number of satellites
-double heading;   // heading in degrees (titlt compensated)
-double headingNc; // heading in degrees (not titlt compensated)
-double cog;       // course over ground
-double vsi;       // vertical speed indicator (barometric) in m/s (a.k.a. climb speed)
-double hdop;      // horizontal dilution of precision
-double vdop;      // vertical dilution of precision
-double gpsVsi;    // vertical speed indicator (GPS based) in m/s (a.k.a. climb speed)
-float pitchRad;   // pitch in radians
-float rollRad;    // roll in radians
-int8_t pitch;      // pitch in degrees
-int16_t roll;      // roll in degrees
-uint8_t year;      // year (minus 2000)
-uint8_t month;
-uint8_t day;
-uint8_t hour;    // hour (for time between 16:00 and 23:59 the hour returned from GPS module is actually 00:00 - 7:59)
-uint8_t minute;
-uint8_t second;
-uint16_t battery; // battery voltage in mV
-uint16_t motorOut[8]; // motor output value (0 when unused, otherwise 16920~35000, 16920 = motor off), use motorOut_t enum to index the table
-int16_t rcIn[10]; // RC stick input (-1000~1000), use rcInChan_t enum to index the table
-modes_t mode;      // flight mode (see mode_t enum)
+static double lon;       // longitude in degree decimal
+static double lat;       // latitude in degree decimal
+static double alt;       // altitude in m (from barometric sensor)
+static double gpsAlt;    // altitude in m (from GPS)
+static double spd;       // speed in m/s
+static fixType_t fix;     // fix type (see fixType_t enum)
+static uint8_t sat;       // number of satellites
+static double heading;   // heading in degrees (titlt compensated)
+static double headingNc; // heading in degrees (not titlt compensated)
+static double cog;       // course over ground
+static double vsi;       // vertical speed indicator (barometric) in m/s (a.k.a. climb speed)
+static double hdop;      // horizontal dilution of precision
+static double vdop;      // vertical dilution of precision
+static double gpsVsi;    // vertical speed indicator (GPS based) in m/s (a.k.a. climb speed)
+static float pitchRad;   // pitch in radians
+static float rollRad;    // roll in radians
+static int8_t pitch;      // pitch in degrees
+static int16_t roll;      // roll in degrees
+static uint8_t year;      // year (minus 2000)
+static uint8_t month;
+static uint8_t day;
+static uint8_t hour;    // hour (for time between 16:00 and 23:59 the hour returned from GPS module is actually 00:00 - 7:59)
+static uint8_t minute;
+static uint8_t second;
+static uint16_t battery; // battery voltage in mV
+static uint16_t motorOut[8]; // motor output value (0 when unused, otherwise 16920~35000, 16920 = motor off), use motorOut_t enum to index the table
+static int16_t rcIn[10]; // RC stick input (-1000~1000), use rcInChan_t enum to index the table
+static modes_t mode;      // flight mode (see mode_t enum)
 
 #ifdef GET_SMART_BATTERY_DATA
-uint8_t  batteryPercent; // smart battery charge percentage (0-100%)
-uint16_t batteryCell[3]; // smart battery cell voltage in mV, use smartBatteryCell_t enum to index the table
+static uint8_t  batteryPercent; // smart battery charge percentage (0-100%)
+static uint16_t batteryCell[3]; // smart battery cell voltage in mV, use smartBatteryCell_t enum to index the table
 #endif
-
-// Periodically (every 2 sec., keeps it inner counter) sends a heartbeat message to the controller
-void Heartbeat(void);
-// Decode incoming CAN message if any (shall be called in a loop)
-uint16_t NazaCanDecoderLib_Decode(void);
 
 // Returns latitude in degree decimal
 double nazaDecode_getLat()
@@ -437,41 +437,27 @@ uint16_t NazaCanDecoderLib_Decode(void)
 	return msgId;
 }
 
-void Heartbeat()
+void NazaKick()
 {
 	CanTxMsg TxMessage;
 
-	TxMessage.StdId = HEARTBEAT_1[0][0];
+	TxMessage.StdId = nazaKickID_1;
 	TxMessage.ExtId = 0x00;
 	TxMessage.IDE = CAN_Id_Standard;
 	TxMessage.RTR = CAN_RTR_DATA;
-	TxMessage.DLC = HEARTBEAT_1[0][2];
+	TxMessage.DLC = nazaKickDLC_1;
 
-	// Здесь используется такое копирование, так как TxMessage.Data имеет
-	// размерность uint8_t, а HEARTBEAT_1 и HEARTBEAT_2 - uint16_t (такая
-	// организация HEARTBEAT_1 была создана автором либы)
-
-	TxMessage.Data[0] = HEARTBEAT_1[1][0];
-	TxMessage.Data[1] = HEARTBEAT_1[1][1];
-	TxMessage.Data[2] = HEARTBEAT_1[1][2];
-	TxMessage.Data[3] = HEARTBEAT_1[1][3];
-	TxMessage.Data[4] = HEARTBEAT_1[1][4];
-	TxMessage.Data[5] = HEARTBEAT_1[1][5];
-	TxMessage.Data[6] = HEARTBEAT_1[1][6];
-	TxMessage.Data[7] = HEARTBEAT_1[1][7];
+	memcpy(TxMessage.Data, nazaKickData_1, 8*sizeof(TxMessage.Data[0]));
 
 	CAN_Transmit(CAN1, &TxMessage);
 
-	TxMessage.StdId = HEARTBEAT_2[0][0];
+	TxMessage.StdId = nazaKickID_2;
 	TxMessage.ExtId = 0x00;
 	TxMessage.IDE = CAN_Id_Standard;
 	TxMessage.RTR = CAN_RTR_DATA;
-	TxMessage.DLC = HEARTBEAT_2[0][2];
+	TxMessage.DLC = nazaKickDLC_2;
 
-	TxMessage.Data[0] = HEARTBEAT_2[1][0];
-	TxMessage.Data[1] = HEARTBEAT_2[1][1];
-	TxMessage.Data[2] = HEARTBEAT_2[1][2];
-	TxMessage.Data[3] = HEARTBEAT_2[1][3];
+	memcpy(TxMessage.Data, nazaKickData_2, 4*sizeof(TxMessage.Data[0]));
 
 	CAN_Transmit(CAN1, &TxMessage);
 }

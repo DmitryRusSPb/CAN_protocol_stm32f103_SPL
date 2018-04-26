@@ -258,7 +258,9 @@ typedef union
 } naza_msg_t;
 
 // Periodically (every 2 sec., keeps it inner counter) sends a heartbeat message to the controller
-void Heartbeat(void);
+//void Heartbeat(void);
+// Сигнализируем naza о том, что пора слать данные
+void NazaKick();
 // Start the NazaCanDecoder
 void begin(void);
 // Decode incoming CAN message if any (shall be called in a loop)

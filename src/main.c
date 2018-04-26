@@ -131,7 +131,7 @@ int main(void)
 
 	printf(" Hello.\r\nI am ready!\r\n");
 
-	Heartbeat();
+	NazaKick();
 
 	while(1)
 	{
